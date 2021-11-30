@@ -454,7 +454,6 @@ switch (message)
 
         wsprintfW(index, L"점수 : %d 제한시간 : %d", g_score, g_timer);
         TextOut(hdc, 810, 50, index, lstrlenW(index));
-        TextOut(hdc, 810, 60, index, lstrlenW(index));
 
         if (checkStart == TRUE)
         {
