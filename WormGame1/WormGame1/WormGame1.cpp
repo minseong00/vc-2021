@@ -216,8 +216,8 @@ switch (message)
             810, 250, 100, 20, hWnd, (HMENU)1, hInst, NULL);
 
         //게임 벽 크기
-        wall.left = 10;
-        wall.top = 10;
+        wall.left = 20;
+        wall.top = 20;
         wall.right = 800;
         wall.bottom = 600;
         
@@ -237,21 +237,21 @@ switch (message)
         }
 
         //아이템 좌표 구성
-        item[0].left = rand() % 750;
-        item[0].top = rand() % 750;
+        item[0].left = rand() % 40 * 20;
+        item[0].top = rand() % 40 * 20;
         item[0].right = item[0].left + 20;
         item[0].bottom = item[0].top + 20;
 
-        item[1].left = rand() % 750;
-        item[1].top = rand() % 750;
+        item[1].left = rand() % 40 * 20;
+        item[1].top = rand() % 40 * 20;
         item[1].right = item[1].left + 20;
         item[1].bottom = item[1].top + 20;
 
         //장애물 좌표 구성
         for (int i = 0; i < 6; i++)
         {
-            obstacle[i].left = rand() % 750;
-            obstacle[i].top = rand() % 750;
+            obstacle[i].left = rand() % 40 * 20;
+            obstacle[i].top = rand() % 40 * 20;
             obstacle[i].right = obstacle[i].left + 40;
             obstacle[i].bottom = obstacle[i].top + 40;
 
@@ -269,13 +269,13 @@ switch (message)
         {
             int i = 0;
             int a = 0;
-            for ( i; i < 2; i++) // 10 10 800 600
+            for ( i; i < 2; i++) // 10 10 40 * 20 600
             {
                 if (item[i].left <= 10 || item[i].top <= 10 ||
-                    item[i].right >= 800 || item[i].bottom >= 600)
+                    item[i].right >= 40 * 20 || item[i].bottom >= 600)
                 {
-                    item[i].left = rand() % 750;
-                    item[i].top = rand() % 750;
+                    item[i].left = rand() % 40 * 20;
+                    item[i].top = rand() % 40 * 20;
                     item[i].right = item[i].left + 20;
                     item[i].bottom = item[i].top + 20;
                 }
@@ -285,10 +285,10 @@ switch (message)
             for (a; a < 6; a++) 
             {
                 if (obstacle[i].left <= 10 || obstacle[i].top <= 10 ||
-                    obstacle[i].right >= 800 || obstacle[i].bottom >= 600)
+                    obstacle[i].right >= 40 * 20 || obstacle[i].bottom >= 600)
                 {
-                    obstacle[i].left = rand() % 750;
-                    obstacle[i].top = rand() % 750;
+                    obstacle[i].left = rand() % 40 * 20;
+                    obstacle[i].top = rand() % 40 * 20;
                     obstacle[i].right = obstacle[i].left + 40;
                     obstacle[i].bottom = obstacle[i].top + 40;
                 }
@@ -323,6 +323,7 @@ switch (message)
                     KillTimer(hWnd, TIMER_1);
                     KillTimer(hWnd, TIMER_2);
                     MessageBox(hWnd, L"타임오버 종료", L"gameover", MB_OK);
+                    checkStart = FALSE;
                 }
             }
             break;
@@ -330,50 +331,54 @@ switch (message)
 
             case TIMER_2: //지렁이 스피드 설정
             {
-                if (w_speed != 500) //지렁이의 스피드 체크
+                if (w_speed != 200) //지렁이의 스피드 체크
                 {   
                     w_speed -= 100;
-                    KillTimer(hWnd, TIMER_1);
+                    KillTimer(hWnd, TIMER_2);
 
-                    SetTimer(hWnd, TIMER_1, w_speed, NULL);
+                    SetTimer(hWnd, TIMER_2, w_speed, NULL);
                 }
                 for (i; i < 2; i++)
                 {
                     if (TRUE == IntersectRect(&dst, &worm[0], &item[i]))
                     {
-                        g_timer += 600;
+                        g_timer += 6;
                         KillTimer(hWnd, TIMER_1);
                         SetTimer(hWnd, TIMER_1, g_timer, NULL);
                     }
-                    i = 0;
                 }
+                i = 0;
 
 
 
-                switch (w_flag)
+                switch (w_flag) //방향키 입력에 따라 머리가 이동한다.
                 {
                 case 1: // 왼쪽 방향키
                     if (testkey != 2)
                     {
-
+                        worm[0].left -= 20;
+                        worm[0].right -= 20;
                     }
                     break;
                 case 2: // 오른쪽 방향키
                     if (testkey != 1)
                     {
-
+                        worm[0].left += 20;
+                        worm[0].right += 20;
                     }
                     break;
                 case 3: // 위 방향키
                     if (testkey != 4)
                     {
-
+                        worm[0].top -= 20;
+                        worm[0].bottom -= 20;
                     }
                     break;
                 case 4: // 아래 방향키
                     if (testkey != 3)
                     {
-
+                        worm[0].top += 20;
+                        worm[0].bottom += 20;
                     }
                     break;
                 }
@@ -392,32 +397,45 @@ switch (message)
     }
     break;
 
-    case WM_KEYDOWN:
+    case WM_KEYUP:
     {
         RECT dst;
 
         switch (wParam) //방향키 버튼 입력으로 지렁이의 방향 설정
         {
         case VK_LEFT:
-            testkey = w_flag;
-            w_flag = 1;
+            if (testkey != 2)
+            {
+                testkey = w_flag;
+                w_flag = 1;
+            }
             break;
 
         case VK_RIGHT:
-            testkey = w_flag;
-            w_flag = 2;
+            if (testkey != 1)
+            {
+                testkey = w_flag;
+                w_flag = 2;
+            }
             break;
 
         case VK_UP:
-            testkey = w_flag;
-            w_flag = 3;
+            if (testkey != 4)
+            {
+                testkey = w_flag;
+                w_flag = 3;
+            }
             break;
 
         case VK_DOWN:
-            testkey = w_flag;
-            w_flag = 4;
+            if (testkey != 3)
+            {
+                testkey = w_flag;
+                w_flag = 4;
+            }
             break;
         }
+        InvalidateRect(hWnd, NULL, TRUE);
     }
     break;
  }
@@ -437,13 +455,8 @@ switch (message)
         wsprintfW(index, L"점수 : %d 제한시간 : %d", g_score, g_timer);
         TextOut(hdc, 810, 50, index, lstrlenW(index));
 
-        
-
-
         if (checkStart == TRUE)
         {
-            //if (g_timer > 15)
-            //    TextOut(hdc, 810, 60, str, lstrlen(str));
             if (checkMode == 1)
             {
                 Ellipse(hdc, worm[0].left, worm[0].top, worm[0].right, worm[0].bottom);
