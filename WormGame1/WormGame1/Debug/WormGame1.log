@@ -1,3 +1,3 @@
 ﻿  WormGame1.cpp
-C:\Users\rkdal\Documents\GitHub\vc-2021\WormGame1\WormGame1\WormGame1.cpp(402,14): warning C4101: 'dst' :참조되지 않은 지역 변수입니다.
-  WormGame1.vcxproj -> C:\Users\rkdal\Documents\GitHub\vc-2021\WormGame1\Debug\WormGame1.exe
+E:\GIT21-2\SCHOOL\vc-2021\WormGame1\WormGame1\WormGame1.cpp(424,14): warning C4101: 'dst' :참조되지 않은 지역 변수입니다.
+  WormGame1.vcxproj -> E:\GIT21-2\SCHOOL\vc-2021\WormGame1\Debug\WormGame1.exe
