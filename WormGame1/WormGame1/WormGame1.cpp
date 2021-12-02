@@ -129,7 +129,8 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 
 //지렁이 아이템 벽 좌표선언
 RECT  worm[30], item[2];
-RECT wall[28][38];
+//RECT wall[28][38];
+RECT wall;
 
 //장애물 좌표선언
 RECT obstacle[20];
@@ -144,6 +145,7 @@ int testkey = 4;
 int i;
 //장애물 카운트 변수
 int x;
+WCHAR p[20] = { 0 , };
 
 //게임 시작 여부 체크
 BOOL checkStart = FALSE;
@@ -161,7 +163,7 @@ int checkMode = 0;
 #define TIMER_2 2 //지렁이 스피드
 #define TIMER_3 3
 
-
+int g_cnt = 1;
 
 
 
@@ -225,23 +227,27 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         //버튼 생성
         CreateWindow(TEXT("button"), TEXT("일반모드"), WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
             810, 200, 100, 20, hWnd, (HMENU)0, hInst, NULL);
-        CreateWindow(TEXT("button"), TEXT("헬모드"), WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
+        CreateWindow(TEXT("button"), TEXT("어려움모드"), WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON,
             810, 250, 100, 20, hWnd, (HMENU)1, hInst, NULL);
 
         //게임 벽 크기
-        for (int q = 0; q < 28; q++)
-        {
-            for (int e = 0; e < 38; e++)
-            {
-                wall[q][e].left = x;
-                wall[q][e].top = y;
-                wall[q][e].right = wall[q][e].left + 20;
-                wall[q][e].bottom = wall[q][e].top + 20;
-                x += 20;
-            }
-            y += 20;
-            x = 20;
-        }
+        wall.left = 20;
+        wall.top = 20;
+        wall.right = 800;
+        wall.bottom = 600;
+        //for (int q = 0; q < 28; q++)
+        //{
+        //    for (int e = 0; e < 38; e++)
+        //    {
+        //        wall[q][e].left = x;
+        //        wall[q][e].top = y;
+        //        wall[q][e].right = wall[q][e].left + 20;
+        //        wall[q][e].bottom = wall[q][e].top + 20;
+        //        x += 20;
+        //    }
+        //    y += 20;
+        //    x = 20;
+        //}
 
         //지렁이 좌표 구성
         worm[0].left = 420;
@@ -268,7 +274,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         SetTimer(hWnd, TIMER_1, 1000, NULL);
 
         //화면 무효화용
-        SetTimer(hWnd, TIMER_3, 1000, NULL);
+        SetTimer(hWnd, TIMER_3, 100, NULL);
 
     }
     break;
@@ -300,13 +306,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
         case TIMER_2: //지렁이 이동
         {
-            for (i = 1; i < (sizeof(worm) / sizeof(worm[0])); i++)
-            {
-                worm[i].left = worm[i - 1].left;
-                worm[i].top = worm[i - 1].top;
-                worm[i].right = worm[i].left + 20;
-                worm[i].bottom = worm[i].top + 20;
-            }
 
             switch (w_flag) //방향키 입력에 따라 머리가 이동한다.
             {
@@ -314,7 +313,17 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 if (testkey != 2)
                 {
                     worm[0].left -= 20;
-                    worm[0].right -= 20;
+                    worm[0].right -= 20; 
+                    for (i = 1; i < g_cnt; i++)
+                    {
+                        
+                        worm[i].left = worm[i - 1].left + 20;
+                        worm[i].top = worm[i - 1].top;
+                        worm[i].right = worm[i].left + 20;
+                        worm[i].bottom = worm[i].top + 20;
+                    }
+                    if (g_cnt < 20)
+                        g_cnt++;
                 }
                 break;
             case 2: // 오른쪽 방향키
@@ -322,6 +331,16 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 {
                     worm[0].left += 20;
                     worm[0].right += 20;
+                    for (i = 1; i < g_cnt; i++)
+                    {
+
+                        worm[i].left = worm[i - 1].left - 20;
+                        worm[i].top = worm[i - 1].top;
+                        worm[i].right = worm[i].left + 20;
+                        worm[i].bottom = worm[i].top + 20;
+                    }
+                    if (g_cnt < 20)
+                        g_cnt++;
                 }
                 break;
             case 3: // 위 방향키
@@ -329,6 +348,16 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 {
                     worm[0].top -= 20;
                     worm[0].bottom -= 20;
+                    for (i = 1; i < g_cnt; i++)
+                    {
+
+                        worm[i].left = worm[i - 1].left;
+                        worm[i].top = worm[i - 1].top + 20;
+                        worm[i].right = worm[i].left + 20;
+                        worm[i].bottom = worm[i].top + 20;
+                    }
+                    if (g_cnt < 20)
+                        g_cnt++;
                 }
                 break;
             case 4: // 아래 방향키
@@ -336,6 +365,16 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 {
                     worm[0].top += 20;
                     worm[0].bottom += 20;
+                    for (i = 1; i < g_cnt; i++)
+                    {
+
+                        worm[i].left = worm[i - 1].left;
+                        worm[i].top = worm[i - 1].top - 20;
+                        worm[i].right = worm[i].left + 20;
+                        worm[i].bottom = worm[i].top + 20;
+                    }
+                    if (g_cnt < 20)
+                        g_cnt++;
                 }
                 break;
             }
@@ -344,7 +383,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         }
         break;
 
-        case TIMER_3:
+        case TIMER_3: // 체크용
         {
             for (i = 0; i < 2; i++)
             {
@@ -364,6 +403,28 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                     obstacle[i_flag].bottom = obstacle[i_flag].top + 60;
                 }
             }
+            
+            /*if (worm[0].left <= 20 || worm[0].right >= 800 || worm[0].top <= 20 || worm[0].bottom >= 600)
+            {
+                KillTimer(hWnd, TIMER_1);
+                KillTimer(hWnd, TIMER_2);
+                MessageBox(hWnd, L"벽에 닿았습니다", L"gameover", MB_OK);
+                checkStart = FALSE;
+                // 모든 생성 초기화코드 넣기
+            }
+            for (i = 0; i < (sizeof(obstacle) / sizeof(obstacle[0])); i++)
+            {
+                if (TRUE == IntersectRect(&dst, &worm[0], &obstacle[i]))
+                {
+                    KillTimer(hWnd, TIMER_1);
+                    KillTimer(hWnd, TIMER_2);
+                    MessageBox(hWnd, L"장애물에 닿았습니다", L"gameover", MB_OK);
+                    checkStart = FALSE;
+                    // 모든 생성 초기화코드 넣기
+
+                }
+            }*/
+
 
             InvalidateRect(hWnd, NULL, TRUE);
         }
@@ -375,7 +436,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     }
     break;
 
-    }
+    
 
     case WM_KEYDOWN:
     {
@@ -389,6 +450,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
               }*/
             testkey = w_flag;
             w_flag = 1;
+            g_cnt++;
             break;
 
         case VK_RIGHT:
@@ -398,6 +460,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
              }*/
             testkey = w_flag;
             w_flag = 2;
+            g_cnt++;
             break;
 
         case VK_UP:
@@ -407,6 +470,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
              }*/
             testkey = w_flag;
             w_flag = 3;
+            g_cnt++;
             break;
 
         case VK_DOWN:
@@ -416,6 +480,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             }*/
             testkey = w_flag;
             w_flag = 4;
+            g_cnt++;
             break;
 
 
@@ -425,7 +490,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     }
     break;
 
-
+    }
 
     case WM_PAINT:
     {
@@ -435,14 +500,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         WCHAR index[64] = { 0, };
         HDC hdc = BeginPaint(hWnd, &ps);
         // TODO: 여기에 hdc를 사용하는 그리기 코드를 추가합니다...
-        //for(int a = 0; a < 28; a++)
+        //for(int a = 0; a < 28; a++)                
         //{
         //    for (int b = 0; b < 38; b++)
         //    {
         //        Rectangle(hdc, wall[a][b].left, wall[a][b].top, wall[a][b].right, wall[a][b].bottom);
         //    }
         //}
-        Rectangle(hdc, 20, 20, 800, 600);
+        Rectangle(hdc, wall.left, wall.top, wall.right, wall.bottom);
 
         txt.left = 830;
         txt.top = 50;
@@ -450,6 +515,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         txt.bottom = 200;
         wsprintfW(index, L"점수 : %d\n제한시간 : %d", g_score, g_timer);
         DrawText(hdc, index, -1, &txt, DT_LEFT | DT_WORDBREAK);
+            //wsprintfW(p, L"%d", worm[3].left);
+            //MessageBox(hWnd, p,p, MB_OK);
 
         if (checkStart == TRUE)
         {

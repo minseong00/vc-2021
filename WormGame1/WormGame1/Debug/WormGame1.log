@@ -1,3 +1,5 @@
 ﻿  WormGame1.cpp
-E:\GIT21-2\SCHOOL\vc-2021\WormGame1\WormGame1\WormGame1.cpp(424,14): warning C4101: 'dst' :참조되지 않은 지역 변수입니다.
+E:\GIT21-2\SCHOOL\vc-2021\WormGame1\WormGame1\WormGame1.cpp(174,12): warning C4101: 'brush' :참조되지 않은 지역 변수입니다.
+E:\GIT21-2\SCHOOL\vc-2021\WormGame1\WormGame1\WormGame1.cpp(174,19): warning C4101: 'brush1' :참조되지 않은 지역 변수입니다.
+E:\GIT21-2\SCHOOL\vc-2021\WormGame1\WormGame1\WormGame1.cpp(443,14): warning C4101: 'dst' :참조되지 않은 지역 변수입니다.
   WormGame1.vcxproj -> E:\GIT21-2\SCHOOL\vc-2021\WormGame1\Debug\WormGame1.exe
