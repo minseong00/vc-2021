@@ -132,6 +132,7 @@ RECT  worm[30], item[2];
 //RECT wall[28][38];
 RECT wall;
 
+int worm1[30];
 //장애물 좌표선언
 RECT obstacle[20];
 
@@ -164,6 +165,7 @@ int checkMode = 0;
 #define TIMER_3 3
 
 int g_cnt = 1;
+int g_item = 0;
 
 
 
@@ -216,10 +218,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     {
         int o = 0;
         int o2 = 0;
-        int x = 20;
-        int y = 20;
+        int x = 420;
+        int y = 420;
         //윈도우 창 크기
         SetWindowPos(hWnd, NULL, 200, 100, 1000, 680, 0);
+
 
         //타이머 세팅
         srand((unsigned int)time(NULL));
@@ -250,10 +253,15 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         //}
 
         //지렁이 좌표 구성
-        worm[0].left = 420;
-        worm[0].top = 420;
-        worm[0].right = worm[0].left + 20;
-        worm[0].bottom = worm[0].top + 20;
+        for (i = 0; i < 3; i++)
+        {
+            worm[i].left = x;
+            worm[i].top = y;
+            worm[i].right = worm[i].left + 20;
+            worm[i].bottom = worm[i].top + 20;
+            x += 20;
+            y += 20;
+        }
 
 
         //아이템 좌표 구성
@@ -274,7 +282,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         SetTimer(hWnd, TIMER_1, 1000, NULL);
 
         //화면 무효화용
-        SetTimer(hWnd, TIMER_3, 100, NULL);
+        SetTimer(hWnd, TIMER_3, 200, NULL);
 
     }
     break;
@@ -312,69 +320,76 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             case 1: // 왼쪽 방향키
                 if (testkey != 2)
                 {
-                    worm[0].left -= 20;
-                    worm[0].right -= 20; 
+                    // 1번방부터 20번방까지 (g_cnt) 순서대로 방을 올라가며 전 방의 위치를 준다.
                     for (i = 1; i < g_cnt; i++)
                     {
-                        
-                        worm[i].left = worm[i - 1].left + 20;
-                        worm[i].top = worm[i - 1].top;
+                        worm1[30 - 1] = worm[i - 1].left;
+
+                        /*worm[i].left = worm1[i];*/
+                       /* worm[i].top = worm[i - 1].top;
                         worm[i].right = worm[i].left + 20;
-                        worm[i].bottom = worm[i].top + 20;
+                        worm[i].bottom = worm[i].top + 20;*/
                     }
-                    if (g_cnt < 20)
-                        g_cnt++;
+                    // 1번방이 새로운 위치로 떠난다 = 새로운 위치의 정보를 받는다
+                    worm[0].left -= 20;
+                    worm[0].right -= 20; 
                 }
                 break;
             case 2: // 오른쪽 방향키
                 if (testkey != 1)
                 {
-                    worm[0].left += 20;
-                    worm[0].right += 20;
                     for (i = 1; i < g_cnt; i++)
                     {
+                        //if (g_item != 1)
+                        //    break;
 
-                        worm[i].left = worm[i - 1].left - 20;
+                        worm[i].left = worm[i - 1].left;
                         worm[i].top = worm[i - 1].top;
                         worm[i].right = worm[i].left + 20;
                         worm[i].bottom = worm[i].top + 20;
                     }
                     if (g_cnt < 20)
                         g_cnt++;
+                    worm[0].left += 20;
+                    worm[0].right += 20;
                 }
                 break;
             case 3: // 위 방향키
                 if (testkey != 4)
                 {
-                    worm[0].top -= 20;
-                    worm[0].bottom -= 20;
                     for (i = 1; i < g_cnt; i++)
                     {
+                        //if (g_item != 1)
+                        //    break;
 
                         worm[i].left = worm[i - 1].left;
-                        worm[i].top = worm[i - 1].top + 20;
+                        worm[i].top = worm[i - 1].top;
                         worm[i].right = worm[i].left + 20;
                         worm[i].bottom = worm[i].top + 20;
                     }
                     if (g_cnt < 20)
                         g_cnt++;
+                    worm[0].top -= 20;
+                    worm[0].bottom -= 20;
                 }
                 break;
             case 4: // 아래 방향키
                 if (testkey != 3)
                 {
-                    worm[0].top += 20;
-                    worm[0].bottom += 20;
                     for (i = 1; i < g_cnt; i++)
                     {
+                        //if (g_item != 1)
+                        //    break;
 
                         worm[i].left = worm[i - 1].left;
-                        worm[i].top = worm[i - 1].top - 20;
+                        worm[i].top = worm[i - 1].top;
                         worm[i].right = worm[i].left + 20;
                         worm[i].bottom = worm[i].top + 20;
                     }
                     if (g_cnt < 20)
                         g_cnt++;
+                    worm[0].top += 20;
+                    worm[0].bottom += 20;
                 }
                 break;
             }
@@ -389,9 +404,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             {
                 if (TRUE == IntersectRect(&dst, &worm[0], &item[i]))
                 {
+                    g_cnt++;
                     g_timer += 6;
                     g_score += 100;
                     i_flag++;
+                    g_item++;
                     item[i].left = rand() % 38 * 20 + 20;
                     item[i].top = rand() % 27 * 20 + 20;
                     item[i].right = item[i].left + 40;
@@ -522,7 +539,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         {
             if (checkMode == 1)
             {
-                for (int c = 0; c < (sizeof(worm) / sizeof(worm[0])); c++)
+                for (int c = 0; c < g_cnt; c++)
                 {
                     Ellipse(hdc, worm[c].left, worm[c].top, worm[c].right, worm[c].bottom);
                 }
@@ -534,7 +551,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             }
             else if (checkMode == 2)
             {
-                for (int c = 0; c < (sizeof(worm) / sizeof(worm[0])); c++)
+                for (int c = 0; c < g_cnt; c++)
                 {
                     Ellipse(hdc, worm[c].left, worm[c].top, worm[c].right, worm[c].bottom);
                 }
