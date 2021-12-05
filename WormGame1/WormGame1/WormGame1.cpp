@@ -127,29 +127,32 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 //
 //
 
-//지렁이 아이템 벽 좌표선언
-RECT  worm[30], item[2];
-//RECT wall[28][38];
+//지렁이 아이템 좌표 변수
+RECT  worm[100], item[2];
+//벽 좌표 변수
 RECT wall;
-
-int worm1[30];
+//순서대로 이동하기 위한 지렁이 앞 몸체 좌표 변수
+int worm1[100];
 //장애물 좌표선언
-RECT obstacle[20];
+RECT obstacle[31];
 
-//지렁이 방향 확인
+//지렁이 방향 전환 변수
 int w_flag = 3;
+//지렁이 방향 체크 변수
+int testkey = 3;
 //아이템 확인
 int i_flag = 0;
-//방향키 체크 여부
-int testkey = 4;
-//기본 for문 변수
+int i_flag1 = 0;
+//기본 for문 전용 변수
 int i;
-//장애물 카운트 변수
-int x;
-WCHAR p[20] = { 0 , };
+int a;
+//지렁이 초기좌표 변수
+int x = 420;
+int y = 420;
 
 //게임 시작 여부 체크
 BOOL checkStart = FALSE;
+//좌표 체크용 변수
 RECT dst;
 
 //타이머
@@ -162,10 +165,10 @@ int checkMode = 0;
 
 #define TIMER_1 1 //게임 타이머
 #define TIMER_2 2 //지렁이 스피드
-#define TIMER_3 3
+#define TIMER_3 3 //화면 무효화용
 
-int g_cnt = 1;
-int g_item = 0;
+//지렁이 몸 크기
+int g_cnt = 3;
 
 
 
@@ -190,21 +193,108 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             DestroyWindow(hWnd);
             break;
 
-        case 0:
+        case 0: //버튼 종류에 따라 모든 초기화 후 시작
         {
+            KillTimer(hWnd, TIMER_1);
+            KillTimer(hWnd, TIMER_2);
+            KillTimer(hWnd, TIMER_3);
+            w_flag = 3;
+            i_flag = 0;
+            testkey = 3;
+            g_score = 0;
+            checkMode = 0;
+            g_timer = 20;
+            g_cnt = 3;
+            x = 420;
+            y = 420;
+            for (i = 0; i < 3; i++)
+            {
+                worm[i].left = x;
+                worm[i].top = y;
+                worm[i].right = worm[i].left + 20;
+                worm[i].bottom = worm[i].top + 20;
+                y += 20;
+            } y = 420;
+
+            while (true)
+            {
+                for (i = 0; i < 2; i++)
+                {
+                    item[i].left = rand() % 38 * 20 + 20;
+                    item[i].top = rand() % 27 * 20 + 20;
+                    item[i].right = item[i].left + 40;
+                    item[i].bottom = item[i].top + 40;
+                }
+                if (FALSE == IntersectRect(&dst, &item[0], &item[1]))
+                    break;
+            }
+            for (i = 0; i < (sizeof(obstacle) / sizeof(obstacle[0])); i++)
+            {
+                obstacle[i].left = 0;
+                obstacle[i].top = 0;
+                obstacle[i].right = 0;
+                obstacle[i].bottom = 0;
+            }
+
             checkMode = 1;
             checkStart = TRUE;
 
             MessageBox(hWnd, TEXT("일반모드로 시작합니다"), TEXT("게임시작"), MB_OK);
+            SetTimer(hWnd, TIMER_2, 100, NULL);
+            SetTimer(hWnd, TIMER_1, 1000, NULL);
+            SetTimer(hWnd, TIMER_3, 30, NULL);
         }
         break;
 
-        case 1:
+        case 1: //버튼 종류에 따라 모든 초기화 후 시작
         {
+            KillTimer(hWnd, TIMER_1);
+            KillTimer(hWnd, TIMER_2);
+            KillTimer(hWnd, TIMER_3);
+            w_flag = 3;
+            i_flag = 0;
+            testkey = 3;
+            g_score = 0;
+            checkMode = 0;
+            g_timer = 20;
+            g_cnt = 3;
+            x = 420;
+            y = 420;
+            for (i = 0; i < 3; i++)
+            {
+                worm[i].left = x;
+                worm[i].top = y;
+                worm[i].right = worm[i].left + 20;
+                worm[i].bottom = worm[i].top + 20;
+                y += 20;
+            }
+            while (true)
+            {
+                for (i = 0; i < 2; i++)
+                {
+                    item[i].left = rand() % 38 * 20 + 20;
+                    item[i].top = rand() % 27 * 20 + 20;
+                    item[i].right = item[i].left + 40;
+                    item[i].bottom = item[i].top + 40;
+                }
+                if (FALSE == IntersectRect(&dst, &item[0], &item[1]))
+                    break;
+            }
+            
+            for (i = 0; i < (sizeof(obstacle) / sizeof(obstacle[0])); i++)
+            {
+                obstacle[i].left = 0;
+                obstacle[i].top = 0;
+                obstacle[i].right = 0;
+                obstacle[i].bottom = 0;
+            }
             checkMode = 2;
             checkStart = TRUE;
 
             MessageBox(hWnd, TEXT("헬모드로 시작합니다"), TEXT("게임시작"), MB_OK);
+            SetTimer(hWnd, TIMER_2, 100, NULL);
+            SetTimer(hWnd, TIMER_1, 1000, NULL);
+            SetTimer(hWnd, TIMER_3, 30, NULL);
         }
         break;
 
@@ -216,10 +306,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
     case WM_CREATE:
     {
-        int o = 0;
-        int o2 = 0;
-        int x = 420;
-        int y = 420;
         //윈도우 창 크기
         SetWindowPos(hWnd, NULL, 200, 100, 1000, 680, 0);
 
@@ -238,19 +324,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         wall.top = 20;
         wall.right = 800;
         wall.bottom = 600;
-        //for (int q = 0; q < 28; q++)
-        //{
-        //    for (int e = 0; e < 38; e++)
-        //    {
-        //        wall[q][e].left = x;
-        //        wall[q][e].top = y;
-        //        wall[q][e].right = wall[q][e].left + 20;
-        //        wall[q][e].bottom = wall[q][e].top + 20;
-        //        x += 20;
-        //    }
-        //    y += 20;
-        //    x = 20;
-        //}
 
         //지렁이 좌표 구성
         for (i = 0; i < 3; i++)
@@ -259,35 +332,41 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             worm[i].top = y;
             worm[i].right = worm[i].left + 20;
             worm[i].bottom = worm[i].top + 20;
-            x += 20;
             y += 20;
-        }
+        } y = 420;
 
 
         //아이템 좌표 구성
-        for (i = 0; i < 2; i++)
+        while (true)
         {
-            item[i].left = rand() % 38 * 20 + 20;
-            item[i].top = rand() % 27 * 20 + 20;
-            item[i].right = item[i].left + 40;
-            item[i].bottom = item[i].top + 40;
+            for (i = 0; i < 2; i++)
+            {
+                item[i].left = rand() % 38 * 20 + 20;
+                item[i].top = rand() % 27 * 20 + 20;
+                item[i].right = item[i].left + 40;
+                item[i].bottom = item[i].top + 40;
+            }
+            if (FALSE == IntersectRect(&dst, &item[0], &item[1]))
+                break;
         }
 
 
+
         //지렁이 스피드
-        SetTimer(hWnd, TIMER_2, 200, NULL);
+        SetTimer(hWnd, TIMER_2, 100, NULL);
 
         //게임 제한시간 15초
         g_timer = 20;
         SetTimer(hWnd, TIMER_1, 1000, NULL);
 
         //화면 무효화용
-        SetTimer(hWnd, TIMER_3, 200, NULL);
+        SetTimer(hWnd, TIMER_3, 30, NULL);
 
     }
     break;
 
-    if (checkStart == TRUE)
+    
+    if (checkStart == TRUE) // 게임 시작 여부 체크
     {
     case WM_TIMER:
     {
@@ -302,7 +381,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                  KillTimer(hWnd, TIMER_1);
                  KillTimer(hWnd, TIMER_2);
                  MessageBox(hWnd, L"타임오버 종료", L"gameover", MB_OK);
-                 checkStart = FALSE;
              }*/
 
 
@@ -312,25 +390,68 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         break;
 
 
-        case TIMER_2: //지렁이 이동
+        case TIMER_2: //지렁이 스피드 이동 타이머 ( 벽과 아이템, 장애물 겹침 여부도 확인 )
         {
+            //지렁이 머리와 아이템 좌표 겹침 확인
+            for (i = 0; i < 2; i++)
+            {
+                if (TRUE == IntersectRect(&dst, &worm[0], &item[i]))
+                {
+                    if(g_cnt < 100)
+                    g_cnt++;
+                    g_timer += 6;
+                    g_score += 100;
+                    i_flag++;
+                    while (true)
+                    {
+                        if (i_flag < 30 && checkMode == 2)
+                        {
+                            obstacle[i_flag].left = rand() % 37 * 20 + 20;
+                            obstacle[i_flag].top = rand() % 26 * 20 + 20;
+                            obstacle[i_flag].right = obstacle[i_flag].left + 60;
+                            obstacle[i_flag].bottom = obstacle[i_flag].top + 60;
+                        }
+                        for (a = 0; a < i_flag; a++)
+                        {
+                            if (FALSE == IntersectRect(&dst, &worm[0], &obstacle[a]))
+                                i_flag1 = 1;
+                        }
+                        if (i_flag1 == 1)
+                            break;
+                    }
+                    i_flag1 = 0;
+                    while (true)
+                    {
+                        item[i].left = rand() % 38 * 20 + 20;
+                        item[i].top = rand() % 27 * 20 + 20;
+                        item[i].right = item[i].left + 40;
+                        item[i].bottom = item[i].top + 40;
+                        for (a = 0; a < i_flag; a++)
+                        {
+                            if (FALSE == IntersectRect(&dst, &item[0], &item[1])
+                                && FALSE == IntersectRect(&dst, &item[i], &obstacle[a]))
+                                i_flag1 = 1;
+                        }
+                        if (i_flag1 == 1)
+                            break;
+                    }
+                    i_flag1 = 0;
+                }
+            }
 
             switch (w_flag) //방향키 입력에 따라 머리가 이동한다.
             {
             case 1: // 왼쪽 방향키
                 if (testkey != 2)
                 {
-                    // 1번방부터 20번방까지 (g_cnt) 순서대로 방을 올라가며 전 방의 위치를 준다.
-                    for (i = 1; i < g_cnt; i++)
+                    for (i = 0; i < g_cnt; i++)
                     {
-                        worm1[30 - 1] = worm[i - 1].left;
-
-                        /*worm[i].left = worm1[i];*/
-                       /* worm[i].top = worm[i - 1].top;
-                        worm[i].right = worm[i].left + 20;
-                        worm[i].bottom = worm[i].top + 20;*/
+                        worm1[i] = worm[g_cnt - i - 1].left;
+                        worm[g_cnt - i].left = worm1[i];
+                        worm[g_cnt - i].top = worm[g_cnt - i - 1].top;
+                        worm[g_cnt - i].right = worm[g_cnt - i - 1].right;
+                        worm[g_cnt - i].bottom = worm[g_cnt - i - 1].bottom;
                     }
-                    // 1번방이 새로운 위치로 떠난다 = 새로운 위치의 정보를 받는다
                     worm[0].left -= 20;
                     worm[0].right -= 20; 
                 }
@@ -338,18 +459,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             case 2: // 오른쪽 방향키
                 if (testkey != 1)
                 {
-                    for (i = 1; i < g_cnt; i++)
+                    for (i = 0; i < g_cnt; i++)
                     {
-                        //if (g_item != 1)
-                        //    break;
-
-                        worm[i].left = worm[i - 1].left;
-                        worm[i].top = worm[i - 1].top;
-                        worm[i].right = worm[i].left + 20;
-                        worm[i].bottom = worm[i].top + 20;
+                        worm1[i] = worm[g_cnt - i - 1].left;
+                        worm[g_cnt - i].left = worm1[i];
+                        worm[g_cnt - i].top = worm[g_cnt - i - 1].top;
+                        worm[g_cnt - i].right = worm[g_cnt - i - 1].right;
+                        worm[g_cnt - i].bottom = worm[g_cnt - i - 1].bottom;
                     }
-                    if (g_cnt < 20)
-                        g_cnt++;
                     worm[0].left += 20;
                     worm[0].right += 20;
                 }
@@ -357,18 +474,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             case 3: // 위 방향키
                 if (testkey != 4)
                 {
-                    for (i = 1; i < g_cnt; i++)
+                    for (i = 0; i < g_cnt; i++)
                     {
-                        //if (g_item != 1)
-                        //    break;
-
-                        worm[i].left = worm[i - 1].left;
-                        worm[i].top = worm[i - 1].top;
-                        worm[i].right = worm[i].left + 20;
-                        worm[i].bottom = worm[i].top + 20;
+                        worm1[i] = worm[g_cnt - i - 1].top;
+                        worm[g_cnt - i].left = worm[g_cnt - i - 1].left;
+                        worm[g_cnt - i].top = worm1[i];
+                        worm[g_cnt - i].right = worm[g_cnt - i - 1].right;
+                        worm[g_cnt - i].bottom = worm[g_cnt - i - 1].bottom;
                     }
-                    if (g_cnt < 20)
-                        g_cnt++;
                     worm[0].top -= 20;
                     worm[0].bottom -= 20;
                 }
@@ -376,71 +489,60 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             case 4: // 아래 방향키
                 if (testkey != 3)
                 {
-                    for (i = 1; i < g_cnt; i++)
+                    for (i = 0; i < g_cnt; i++)
                     {
-                        //if (g_item != 1)
-                        //    break;
-
-                        worm[i].left = worm[i - 1].left;
-                        worm[i].top = worm[i - 1].top;
-                        worm[i].right = worm[i].left + 20;
-                        worm[i].bottom = worm[i].top + 20;
+                        worm1[i] = worm[g_cnt - i - 1].top;
+                        worm[g_cnt - i].left = worm[g_cnt - i - 1].left;
+                        worm[g_cnt - i].top = worm1[i];
+                        worm[g_cnt - i].right = worm[g_cnt - i - 1].right;
+                        worm[g_cnt - i].bottom = worm[g_cnt - i - 1].bottom;
                     }
-                    if (g_cnt < 20)
-                        g_cnt++;
                     worm[0].top += 20;
                     worm[0].bottom += 20;
                 }
                 break;
             }
 
-            InvalidateRect(hWnd, NULL, TRUE);
+            //지렁이 벽 좌표 겹침 여부
+            if (worm[0].left <= 0 || worm[0].right >= 820 || worm[0].top <= 0 || worm[0].bottom >= 620)
+            {
+                KillTimer(hWnd, TIMER_1);
+                KillTimer(hWnd, TIMER_2);
+                KillTimer(hWnd, TIMER_3);
+                checkStart = FALSE;
+                MessageBox(hWnd, L"벽에 돌진해 죽었습니다", L"gameover", MB_OK);
+            }
+            
+            //지렁이 장애물 좌표 겹침 여부
+            for (i = 0; i < (sizeof(obstacle) / sizeof(obstacle[0])); i++)
+            {
+                if ((TRUE == IntersectRect(&dst, &worm[0], &obstacle[i])) && checkMode == 2)
+                {
+                    KillTimer(hWnd, TIMER_1);
+                    KillTimer(hWnd, TIMER_2);
+                    KillTimer(hWnd, TIMER_3);
+                    checkStart = FALSE;
+                    MessageBox(hWnd, L"장애물에 돌진해 죽었습니다", L"gameover", MB_OK);
+                }
+            }
+            //지렁이 머리와 몸체 좌표 겹침 여부
+            for (i = 1; i < g_cnt; i++)
+            {
+                if (TRUE == IntersectRect(&dst, &worm[0], &worm[i]))
+                {
+                    KillTimer(hWnd, TIMER_1);
+                    KillTimer(hWnd, TIMER_2);
+                    KillTimer(hWnd, TIMER_3);
+                    checkStart = FALSE;
+                    MessageBox(hWnd, L"자기 몸에 돌진해 죽었습니다", L"gameover", MB_OK);
+                }
+            }
         }
         break;
 
         case TIMER_3: // 체크용
         {
-            for (i = 0; i < 2; i++)
-            {
-                if (TRUE == IntersectRect(&dst, &worm[0], &item[i]))
-                {
-                    g_cnt++;
-                    g_timer += 6;
-                    g_score += 100;
-                    i_flag++;
-                    g_item++;
-                    item[i].left = rand() % 38 * 20 + 20;
-                    item[i].top = rand() % 27 * 20 + 20;
-                    item[i].right = item[i].left + 40;
-                    item[i].bottom = item[i].top + 40;
 
-                    obstacle[i_flag].left = rand() % 37 * 20 + 20;
-                    obstacle[i_flag].top = rand() % 26 * 20 + 20;
-                    obstacle[i_flag].right = obstacle[i_flag].left + 60;
-                    obstacle[i_flag].bottom = obstacle[i_flag].top + 60;
-                }
-            }
-            
-            /*if (worm[0].left <= 20 || worm[0].right >= 800 || worm[0].top <= 20 || worm[0].bottom >= 600)
-            {
-                KillTimer(hWnd, TIMER_1);
-                KillTimer(hWnd, TIMER_2);
-                MessageBox(hWnd, L"벽에 닿았습니다", L"gameover", MB_OK);
-                checkStart = FALSE;
-                // 모든 생성 초기화코드 넣기
-            }
-            for (i = 0; i < (sizeof(obstacle) / sizeof(obstacle[0])); i++)
-            {
-                if (TRUE == IntersectRect(&dst, &worm[0], &obstacle[i]))
-                {
-                    KillTimer(hWnd, TIMER_1);
-                    KillTimer(hWnd, TIMER_2);
-                    MessageBox(hWnd, L"장애물에 닿았습니다", L"gameover", MB_OK);
-                    checkStart = FALSE;
-                    // 모든 생성 초기화코드 넣기
-
-                }
-            }*/
 
 
             InvalidateRect(hWnd, NULL, TRUE);
@@ -461,43 +563,39 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         switch (wParam) //방향키 버튼 입력으로 지렁이의 방향 설정
         {
         case VK_LEFT:
-            /*  if (testkey != 2)
-              {
+            if (w_flag != 2)
+            {
+                testkey = w_flag;
+                w_flag = 1;
+            }
 
-              }*/
-            testkey = w_flag;
-            w_flag = 1;
-            g_cnt++;
             break;
 
         case VK_RIGHT:
-            /* if (testkey != 1)
-             {
+            if (w_flag != 1)
+            {
+                testkey = w_flag;
+                w_flag = 2;
+            }
 
-             }*/
-            testkey = w_flag;
-            w_flag = 2;
-            g_cnt++;
             break;
 
         case VK_UP:
-            /* if (testkey != 4)
-             {
+            if (w_flag != 4)
+            {
+                testkey = w_flag;
+                w_flag = 3;
+            }
 
-             }*/
-            testkey = w_flag;
-            w_flag = 3;
-            g_cnt++;
             break;
 
         case VK_DOWN:
-            /*if (testkey != 3)
+            if (w_flag != 3)
             {
+                testkey = w_flag;
+                w_flag = 4;
+            }
 
-            }*/
-            testkey = w_flag;
-            w_flag = 4;
-            g_cnt++;
             break;
 
 
