@@ -131,6 +131,8 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 RECT  worm[100], item[2];
 //벽 좌표 변수
 RECT wall;
+//지렁이와 장애물 좌표 체크 변수
+RECT wormt;
 //순서대로 이동하기 위한 지렁이 앞 몸체 좌표 변수
 int worm1[100];
 //장애물 좌표선언
@@ -146,6 +148,7 @@ int i_flag1 = 0;
 //기본 for문 전용 변수
 int i;
 int a;
+int b = 0;
 //지렁이 초기좌표 변수
 int x = 420;
 int y = 420;
@@ -200,6 +203,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             KillTimer(hWnd, TIMER_3);
             w_flag = 3;
             i_flag = 0;
+            i_flag1 = 0;
             testkey = 3;
             g_score = 0;
             checkMode = 0;
@@ -207,6 +211,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             g_cnt = 3;
             x = 420;
             y = 420;
+            b = 0;
             for (i = 0; i < 3; i++)
             {
                 worm[i].left = x;
@@ -253,6 +258,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             KillTimer(hWnd, TIMER_3);
             w_flag = 3;
             i_flag = 0;
+            i_flag1 = 0;
             testkey = 3;
             g_score = 0;
             checkMode = 0;
@@ -260,6 +266,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             g_cnt = 3;
             x = 420;
             y = 420;
+            b = 0;
             for (i = 0; i < 3; i++)
             {
                 worm[i].left = x;
@@ -336,6 +343,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         } y = 420;
 
 
+
         //아이템 좌표 구성
         while (true)
         {
@@ -351,6 +359,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         }
 
 
+        MessageBox(hWnd, L"뒤를 돌때 방향키를 너무 빠르게 연속으로 누르지 마세요!!", L"TIP", NULL);
 
         //지렁이 스피드
         SetTimer(hWnd, TIMER_2, 100, NULL);
@@ -369,29 +378,34 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     if (checkStart == TRUE) // 게임 시작 여부 체크
     {
     case WM_TIMER:
-    {
+    {   
+        if (checkStart == TRUE)
+        {
         switch (wParam)
         {
         case TIMER_1: //게임 타이머
         {
-            g_timer--;
+            
+                g_timer--;
 
-            /* if (0 == g_timer)
-             {
-                 KillTimer(hWnd, TIMER_1);
-                 KillTimer(hWnd, TIMER_2);
-                 MessageBox(hWnd, L"타임오버 종료", L"gameover", MB_OK);
-             }*/
-
-
-
-
+                 if (-1 == g_timer)
+                 {
+                     KillTimer(hWnd, TIMER_1);
+                     KillTimer(hWnd, TIMER_2);
+                     KillTimer(hWnd, TIMER_3);
+                     checkStart = FALSE;
+                     MessageBox(hWnd, L"타임오버 종료", L"gameover", MB_OK);
+                 }
         }
         break;
 
 
         case TIMER_2: //지렁이 스피드 이동 타이머 ( 벽과 아이템, 장애물 겹침 여부도 확인 )
         {
+            wormt.left = worm[0].left - 40;
+            wormt.right = worm[0].right + 40;
+            wormt.top = worm[0].top - 40;
+            wormt.bottom = worm[0].bottom + 40;
             //지렁이 머리와 아이템 좌표 겹침 확인
             for (i = 0; i < 2; i++)
             {
@@ -399,43 +413,43 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 {
                     if(g_cnt < 100)
                     g_cnt++;
+                    b++;
                     g_timer += 6;
                     g_score += 100;
                     i_flag++;
                     while (true)
                     {
+                        i_flag1 = 0; 
                         if (i_flag < 30 && checkMode == 2)
                         {
-                            obstacle[i_flag].left = rand() % 37 * 20 + 20;
-                            obstacle[i_flag].top = rand() % 26 * 20 + 20;
-                            obstacle[i_flag].right = obstacle[i_flag].left + 60;
-                            obstacle[i_flag].bottom = obstacle[i_flag].top + 60;
+                            obstacle[i_flag - 1].left = rand() % 37 * 20 + 20;
+                            obstacle[i_flag - 1].top = rand() % 26 * 20 + 20;
+                            obstacle[i_flag - 1].right = obstacle[i_flag - 1].left + 60;
+                            obstacle[i_flag - 1].bottom = obstacle[i_flag - 1].top + 60;
                         }
-                        for (a = 0; a < i_flag; a++)
-                        {
-                            if (FALSE == IntersectRect(&dst, &worm[0], &obstacle[a]))
+                            if (FALSE == IntersectRect(&dst, &wormt, &obstacle[i_flag - 1]))
                                 i_flag1 = 1;
-                        }
                         if (i_flag1 == 1)
                             break;
                     }
-                    i_flag1 = 0;
                     while (true)
                     {
+                        i_flag1 = 0;
                         item[i].left = rand() % 38 * 20 + 20;
                         item[i].top = rand() % 27 * 20 + 20;
                         item[i].right = item[i].left + 40;
                         item[i].bottom = item[i].top + 40;
                         for (a = 0; a < i_flag; a++)
                         {
-                            if (FALSE == IntersectRect(&dst, &item[0], &item[1])
-                                && FALSE == IntersectRect(&dst, &item[i], &obstacle[a]))
-                                i_flag1 = 1;
+                            if (FALSE == IntersectRect(&dst, &item[0], &item[1]))
+                            {
+                                if (FALSE == IntersectRect(&dst, &item[i], &obstacle[a]))
+                                    i_flag1++;
+                            }
                         }
-                        if (i_flag1 == 1)
+                        if (i_flag1 == b)
                             break;
                     }
-                    i_flag1 = 0;
                 }
             }
 
@@ -552,10 +566,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 
         }
+        }
     }
     break;
 
-    
 
     case WM_KEYDOWN:
     {
@@ -630,8 +644,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         txt.bottom = 200;
         wsprintfW(index, L"점수 : %d\n제한시간 : %d", g_score, g_timer);
         DrawText(hdc, index, -1, &txt, DT_LEFT | DT_WORDBREAK);
-            //wsprintfW(p, L"%d", worm[3].left);
-            //MessageBox(hWnd, p,p, MB_OK);
+
 
         if (checkStart == TRUE)
         {
