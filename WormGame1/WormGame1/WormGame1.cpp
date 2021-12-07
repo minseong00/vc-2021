@@ -16,6 +16,8 @@ HINSTANCE hInst;                                // 현재 인스턴스입니다.
 WCHAR szTitle[MAX_LOADSTRING];                  // 제목 표시줄 텍스트입니다.
 WCHAR szWindowClass[MAX_LOADSTRING];            // 기본 창 클래스 이름입니다.
 
+
+
 // 이 코드 모듈에 포함된 함수의 선언을 전달합니다:
 ATOM                MyRegisterClass(HINSTANCE hInstance);
 BOOL                InitInstance(HINSTANCE, int);
@@ -31,7 +33,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     UNREFERENCED_PARAMETER(lpCmdLine);
 
     // TODO: 여기에 코드를 입력합니다.
-
     // 전역 문자열을 초기화합니다.
     LoadStringW(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
     LoadStringW(hInstance, IDC_WORMGAME1, szWindowClass, MAX_LOADSTRING);
@@ -80,7 +81,7 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
     wcex.hInstance = hInstance;
     wcex.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_WORMGAME1));
     wcex.hCursor = LoadCursor(nullptr, IDC_ARROW);
-    wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
+    wcex.hbrBackground = (HBRUSH)CreateSolidBrush(RGB(120, 60, 0));
     wcex.lpszMenuName = MAKEINTRESOURCEW(IDC_WORMGAME1);
     wcex.lpszClassName = szWindowClass;
     wcex.hIconSm = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
@@ -179,8 +180,6 @@ int g_cnt = 3;
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-    HBRUSH brush, brush1;
-
     switch (message)
     {
     case WM_COMMAND:
@@ -247,7 +246,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             MessageBox(hWnd, TEXT("일반모드로 시작합니다"), TEXT("게임시작"), MB_OK);
             SetTimer(hWnd, TIMER_2, 100, NULL);
             SetTimer(hWnd, TIMER_1, 1000, NULL);
-            SetTimer(hWnd, TIMER_3, 30, NULL);
+            SetTimer(hWnd, TIMER_3, 1, NULL);
         }
         break;
 
@@ -301,7 +300,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             MessageBox(hWnd, TEXT("헬모드로 시작합니다"), TEXT("게임시작"), MB_OK);
             SetTimer(hWnd, TIMER_2, 100, NULL);
             SetTimer(hWnd, TIMER_1, 1000, NULL);
-            SetTimer(hWnd, TIMER_3, 30, NULL);
+            SetTimer(hWnd, TIMER_3, 1, NULL);
         }
         break;
 
@@ -315,7 +314,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     {
         //윈도우 창 크기
         SetWindowPos(hWnd, NULL, 200, 100, 1000, 680, 0);
-
 
         //타이머 세팅
         srand((unsigned int)time(NULL));
@@ -369,7 +367,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         SetTimer(hWnd, TIMER_1, 1000, NULL);
 
         //화면 무효화용
-        SetTimer(hWnd, TIMER_3, 30, NULL);
+        SetTimer(hWnd, TIMER_3, 1, NULL);
 
     }
     break;
@@ -452,7 +450,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                     }
                 }
             }
-
             switch (w_flag) //방향키 입력에 따라 머리가 이동한다.
             {
             case 1: // 왼쪽 방향키
@@ -559,12 +556,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 
 
-            InvalidateRect(hWnd, NULL, TRUE);
+            InvalidateRect(hWnd, NULL, FALSE);
         }
         break;
-
-
-
         }
         }
     }
@@ -615,7 +609,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
         }
 
-        InvalidateRect(hWnd, NULL, TRUE);
+        InvalidateRect(hWnd, NULL, FALSE);
     }
     break;
 
@@ -624,25 +618,77 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     case WM_PAINT:
     {
         PAINTSTRUCT ps;
-        RECT txt;
+        //점수 시간현황판 변수
+        RECT txt, b_txt, background;
+        WCHAR index[64] = { 0, };        
+        
+        //색상 설정
+        HBRUSH back_brush, wall_brush, ob_brush , worm_brush, worm1_brush, item_brush, brushold;
+        HPEN sco_pen, wall_pen, ob_pen, worm_pen, worm1_pen, item_pen, penold;
 
-        WCHAR index[64] = { 0, };
-        HDC hdc = BeginPaint(hWnd, &ps);
+        worm1_pen = CreatePen(PS_SOLID, 2, RGB(205, 194, 147));
+        worm_pen = CreatePen(PS_SOLID, 2, RGB(205, 194, 147));
+        sco_pen = CreatePen(PS_DASHDOT, 1, RGB(142, 133, 16));
+        wall_pen = CreatePen(PS_SOLID, 3, RGB(75, 75, 75));
+        ob_pen = CreatePen(PS_SOLID, 3, RGB(48, 48, 48));
+        item_pen = CreatePen(PS_DASH, 3, RGB(255, 177, 47));
+
+        worm1_brush = CreateSolidBrush(RGB(128, 0, 0));
+        worm_brush = CreateSolidBrush(RGB(255, 255, 208));
+        back_brush = CreateSolidBrush(RGB(82, 46, 20));
+        wall_brush = CreateSolidBrush(RGB(159, 89, 39));
+        ob_brush = CreateSolidBrush(RGB(75, 75, 75));
+        item_brush = CreateSolidBrush(RGB(255, 205, 124));
+
+        //더블 버퍼링
+        static HDC hdc, memDC, tmpDC;
+        static HBITMAP backbit, backbit1;
+        static RECT buffer;
+        hdc = BeginPaint(hWnd, &ps);
+
+        GetClientRect(hWnd, &buffer);
+        memDC = CreateCompatibleDC(hdc);
+        backbit = CreateCompatibleBitmap(hdc, buffer.right, buffer.bottom);
+        backbit1 = (HBITMAP)SelectObject(memDC, backbit);
+        PatBlt(memDC, 0, 0, buffer.right, buffer.bottom, WHITENESS);
+        tmpDC = hdc;
+        hdc = memDC;
+        memDC = tmpDC;
         // TODO: 여기에 hdc를 사용하는 그리기 코드를 추가합니다...
-        //for(int a = 0; a < 28; a++)                
-        //{
-        //    for (int b = 0; b < 38; b++)
-        //    {
-        //        Rectangle(hdc, wall[a][b].left, wall[a][b].top, wall[a][b].right, wall[a][b].bottom);
-        //    }
-        //}
-        Rectangle(hdc, wall.left, wall.top, wall.right, wall.bottom);
+        //배경화면
+        background.left = -100;
+        background.top = -100;
+        background.right = 3000;
+        background.bottom = 2000;
 
-        txt.left = 830;
+        //스코어판배경
+        b_txt.left = 815;
+        b_txt.top = 45;
+        b_txt.right = 950;
+        b_txt.bottom = 100;
+        //스코어판
+        txt.left = 820;
         txt.top = 50;
-        txt.right = 1000;
-        txt.bottom = 200;
+        txt.right = 950;
+        txt.bottom = 100;
+
+        //윈도우 배경색
+        brushold = (HBRUSH)SelectObject(hdc, back_brush);
+        Rectangle(hdc, background.left, background.top, background.right, background.bottom);
+        back_brush = (HBRUSH)SelectObject(hdc, brushold);
+
+        //벽 색상
+        brushold = (HBRUSH)SelectObject(hdc, wall_brush);
+        penold = (HPEN)SelectObject(hdc, (HGDIOBJ)wall_pen);
+        Rectangle(hdc, wall.left, wall.top, wall.right, wall.bottom);
+        wall_pen = (HPEN)SelectObject(hdc, penold);
+        wall_brush = (HBRUSH)SelectObject(hdc, brushold);
+
+        //스코어판 배경과 텍스트 출력
         wsprintfW(index, L"점수 : %d\n제한시간 : %d", g_score, g_timer);
+        penold = (HPEN)SelectObject(hdc, (HGDIOBJ)sco_pen);
+        Rectangle(hdc, b_txt.left, b_txt.top, b_txt.right, b_txt.bottom);
+        sco_pen = (HPEN)SelectObject(hdc, penold);
         DrawText(hdc, index, -1, &txt, DT_LEFT | DT_WORDBREAK);
 
 
@@ -650,34 +696,78 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         {
             if (checkMode == 1)
             {
-                for (int c = 0; c < g_cnt; c++)
+
+                brushold = (HBRUSH)SelectObject(hdc, worm1_brush);
+                penold = (HPEN)SelectObject(hdc, (HGDIOBJ)worm1_pen);
+                Ellipse(hdc, worm[0].left, worm[0].top, worm[0].right, worm[0].bottom);
+                worm1_pen = (HPEN)SelectObject(hdc, penold);
+                worm1_brush = (HBRUSH)SelectObject(hdc, brushold);
+
+
+                brushold = (HBRUSH)SelectObject(hdc, worm_brush);
+                penold = (HPEN)SelectObject(hdc, (HGDIOBJ)worm_pen);
+                for (int c = 1; c < g_cnt; c++)
                 {
                     Ellipse(hdc, worm[c].left, worm[c].top, worm[c].right, worm[c].bottom);
                 }
+                worm_pen = (HPEN)SelectObject(hdc, penold);
+                worm_brush = (HBRUSH)SelectObject(hdc, brushold);
+
+                brushold = (HBRUSH)SelectObject(hdc, item_brush);
+                penold = (HPEN)SelectObject(hdc, (HGDIOBJ)item_pen);
                 for (int c = 0; c < (sizeof(item) / sizeof(item[0])); c++)
                 {
                     Ellipse(hdc, item[c].left, item[c].top, item[c].right, item[c].bottom);
                 }
-
+                item_pen = (HPEN)SelectObject(hdc, penold);
+                item_brush = (HBRUSH)SelectObject(hdc, brushold);
             }
             else if (checkMode == 2)
             {
-                for (int c = 0; c < g_cnt; c++)
+                for (int c = 1; c < g_cnt; c++)
                 {
                     Ellipse(hdc, worm[c].left, worm[c].top, worm[c].right, worm[c].bottom);
                 }
+                brushold = (HBRUSH)SelectObject(hdc, item_brush);
+                penold = (HPEN)SelectObject(hdc, (HGDIOBJ)item_pen);
                 for (int c = 0; c < (sizeof(item) / sizeof(item[0])); c++)
                 {
                     Ellipse(hdc, item[c].left, item[c].top, item[c].right, item[c].bottom);
                 }
+                item_pen = (HPEN)SelectObject(hdc, penold);
+                item_brush = (HBRUSH)SelectObject(hdc, brushold);
+
+                brushold = (HBRUSH)SelectObject(hdc, ob_brush);
+                penold = (HPEN)SelectObject(hdc, (HGDIOBJ)ob_pen);
                 for (x = 0; x < (sizeof(obstacle) / sizeof(obstacle[0])); x++)
                 {
                     Rectangle(hdc, obstacle[x].left, obstacle[x].top, obstacle[x].right, obstacle[x].bottom);
                 }
+                ob_pen = (HPEN)SelectObject(hdc, penold);
+                ob_brush = (HBRUSH)SelectObject(hdc, brushold);
             }
 
         }
 
+        tmpDC = hdc;
+        hdc = memDC;
+        memDC = tmpDC;
+        GetClientRect(hWnd, &buffer);
+        BitBlt(hdc, 0, 0, buffer.right, buffer.bottom, memDC, 0, 0, SRCCOPY);
+        SelectObject(memDC, backbit1);
+        DeleteObject(backbit);
+        DeleteDC(memDC);
+
+        DeleteObject(wall_pen);
+        DeleteObject(ob_pen);
+        DeleteObject(item_pen);
+        DeleteObject(worm_pen);
+        DeleteObject(sco_pen);
+        DeleteObject(back_brush);
+        DeleteObject(wall_brush);
+        DeleteObject(ob_brush);
+        DeleteObject(item_brush);
+        DeleteObject(worm_brush);
         EndPaint(hWnd, &ps);
     }
     break;
